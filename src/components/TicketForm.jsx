@@ -1,9 +1,19 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-export default function TickectForm({ dispatch }) {
+export default function TickectForm({ dispatch, editingTicket }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setpriority] = useState("1");
+
+  useEffect(() => {
+    if (editingTicket) {
+      setTitle(editingTicket.title);
+      setDescription(editingTicket.description);
+      setpriority(editingTicket.priority);
+    } else {
+      clearForm();
+    }
+  }, [editingTicket]);
 
   const priorityLapels = {
     1: "Low",
@@ -21,7 +31,7 @@ export default function TickectForm({ dispatch }) {
     e.preventDefault();
 
     const ticketData = {
-      id: new Date().toISOString(),
+      id: editingTicket ? editingTicket.id : new Date().toISOString(),
       title,
       description,
       priority,
@@ -29,10 +39,15 @@ export default function TickectForm({ dispatch }) {
     // console.log(ticketData);
 
     dispatch({
-      type: "ADD_TICKET",
+      type: editingTicket ? "UPDATE_TICKET" : "ADD_TICKET",
       payload: ticketData,
     });
 
+    clearForm();
+  };
+
+  const handleCancel = () => {
+    dispatch({ type: "CLEAR_EDITING_TICKET" });
     clearForm();
   };
 
@@ -74,6 +89,12 @@ export default function TickectForm({ dispatch }) {
       <button type="submit" className="button">
         Submit
       </button>
+
+      {editingTicket && (
+        <button className="button" onClick={handleCancel}>
+          Cancel Edit
+        </button>
+      )}
     </form>
   );
 }
